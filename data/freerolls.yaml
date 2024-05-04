@@ -1,0 +1,9 @@
+train: /content/drive/MyDrive/AIML/Freerolls/dataset/freerolls
+val: /content/drive/MyDrive/AIML/Freerolls/dataset/freerolls
+
+# Classes
+names:
+  0: burger
+  1: sandwiches
+  2: slider
+  3: warp
