@@ -1,6 +1,12 @@
 import platform
 import time
 
+# Check if the OS is Windows and change the pathlib.PosixPath to pathlib.WindowsPath
+if platform.system() == "Windows":
+    import pathlib
+    temp = pathlib.PosixPath
+    pathlib.PosixPath = pathlib.WindowsPath
+
 from pathlib import Path
 
 import torch
@@ -12,6 +18,7 @@ from utils.general import (
     check_file,
     check_img_size,
     non_max_suppression,
+    scale_boxes,
 )
 from utils.torch_utils import select_device
 
@@ -24,7 +31,8 @@ def run_predict(task_id: str):
     # Start time
     start_time = time.time()
     
-    result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/freerolls/uploads/{task_id}"})
+    # result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/freerolls/uploads/{task_id}"})
+    result = predict({"source": "tests/483035184095297657.jpg"})
     
     # End time
     end_time = time.time()
@@ -49,7 +57,7 @@ def predict(data):
         
     imgsz = (640, 640)
     
-    weights = "/mnt/volume_sgp1_02/aiml/runs/train/exp/weights/best.pt"
+    weights = "runs/train/exp/weights/best.pt"
     vid_stride = 1
     dnn = False
     half = False
@@ -122,6 +130,9 @@ def predict(data):
             print('p:', p)
             
             if len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
+                
                 json_data = det.tolist()
                 
                 # Put the data in the result array
