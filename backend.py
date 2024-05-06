@@ -31,8 +31,7 @@ def run_predict(task_id: str):
     # Start time
     start_time = time.time()
     
-    # result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/freerolls/uploads/{task_id}"})
-    result = predict({"source": "tests/483035184095297657.jpg"})
+    result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/freerolls/uploads/{task_id}"})
     
     # End time
     end_time = time.time()
@@ -57,7 +56,7 @@ def predict(data):
         
     imgsz = (640, 640)
     
-    weights = "runs/train/exp/weights/best.pt"
+    weights = "/mnt/volume_sgp1_02/aiml/runs/train/exp/weights/best.pt"
     vid_stride = 1
     dnn = False
     half = False
