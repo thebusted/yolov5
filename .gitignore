@@ -258,3 +258,6 @@ fabric.properties
 
 # Comet folders
 .cometml-runs/
+
+# IDE
+.idea/

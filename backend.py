@@ -1,50 +1,20 @@
-import json
-import argparse
-import csv
-import os
 import platform
-import sys
 import time
-
-# Check if the OS is Windows and change the pathlib.PosixPath to pathlib.WindowsPath
-if platform.system() == "Windows":
-    import pathlib
-    temp = pathlib.PosixPath
-    pathlib.PosixPath = pathlib.WindowsPath
 
 from pathlib import Path
 
 import torch
 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0]  # YOLOv5 root directory
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))  # add ROOT to PATH
-ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
-
-from ultralytics.utils.plotting import Annotator, colors, save_one_box
-
 from models.common import DetectMultiBackend
-from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams
+from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages
 from utils.general import (
-    LOGGER,
     Profile,
     check_file,
     check_img_size,
-    check_imshow,
-    check_requirements,
-    colorstr,
-    cv2,
-    increment_path,
     non_max_suppression,
-    print_args,
-    scale_boxes,
-    strip_optimizer,
-    xyxy2xywh,
 )
-from utils.torch_utils import select_device, smart_inference_mode
+from utils.torch_utils import select_device
 
-from typing import Union
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -54,7 +24,7 @@ def run_predict(task_id: str):
     # Start time
     start_time = time.time()
     
-    result = predict({"source": "tests/"})
+    result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/freerolls/uploads/{task_id}"})
     
     # End time
     end_time = time.time()
