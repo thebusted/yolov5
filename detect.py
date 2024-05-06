@@ -33,6 +33,13 @@ import csv
 import os
 import platform
 import sys
+
+# Check if the OS is Windows and change the pathlib.PosixPath to pathlib.WindowsPath
+if platform.system() == "Windows":
+    import pathlib
+    temp = pathlib.PosixPath
+    pathlib.PosixPath = pathlib.WindowsPath
+
 from pathlib import Path
 
 import torch
