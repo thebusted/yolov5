@@ -42,7 +42,7 @@
 			$.ajax({
 				url: 'classify.php',
 				type: 'post',
-				// data: formData,
+				data: formData,
 				contentType: false,
 				processData: false,
 				success: function (response) {
@@ -78,7 +78,7 @@
 
 						const img = document.createElement('img');
 						img.src = URL.createObjectURL(value);
-						img.width = 640;
+						img.width = 500;
 						left.appendChild(img);
 
 						// Create canvas
@@ -98,7 +98,6 @@
 
 						img.onload = function () {
 							// Get the original image size
-							console.log(img.naturalHeight, img.naturalWidth)
 							canvas.width = img.width;
 							canvas.height = img.height;
 
@@ -109,10 +108,12 @@
 							});
 							if (result) {
 								const payload = Array.from(result.payload);
-								const alert = document.createElement('div');
-								alert.className = 'alert alert-success';
-								alert.textContent = 'Classification result:';
-								right.appendChild(alert);
+
+								// Create Description list alignment
+								const dl = document.createElement('dl');
+								dl.className = 'row';
+								let dl_html = '';
+								// right.appendChild(dl);
 
 								// Create <pre> element
 								const pre = document.createElement('pre');
@@ -128,6 +129,12 @@
 								for (const [, value] of Object.entries(payload)) {
 									let [x1, y1, x2, y2, score, class_id] = value;
 
+									// Scale the coordinates
+									x1 *= scale_factor;
+									y1 *= scale_factor;
+									x2 *= scale_factor;
+									y2 *= scale_factor;
+
 									const color = '#00ff00';
 									ctx.strokeStyle = color;
 									ctx.lineWidth = 3;
@@ -135,7 +142,13 @@
 									ctx.font = '16px Arial';
 									ctx.fillStyle = color;
 									ctx.fillText(CLASS_NAMES[class_id] + ': ' + Number(score).toFixed(2), x1, y1);
+
+									dl_html += '<dt class="col-12 fw-bold">Found "' + CLASS_NAMES[class_id] + '" has confidence is ' + score + '</dt>';
 								}
+
+								dl.innerHTML = dl_html;
+
+								right.appendChild(dl);
 
 								console.log('Payload:', payload)
 							} else {
