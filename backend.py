@@ -49,7 +49,7 @@ def predict(data):
         
     imgsz = (640, 640)
     
-    weights = "runs/train/exp/weights/best.pt"
+    weights = "/mnt/volume_sgp1_02/aiml/runs/train/exp/weights/best.pt"
     vid_stride = 1
     dnn = False
     half = False

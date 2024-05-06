@@ -32,10 +32,14 @@ foreach ($images['tmp_name'] as $index => $tmpName) {
 sleep(10);
 
 // Call internal service to classify the images at localhost:8000 using GET method
-$ch = curl_init('http://localhost:8000/predict/' . $task);
+$result = file_get_contents('http://localhost:8000/predict/' . $task);
 
 // Delete the task directory
 foreach ($uploadedImages as $uploadedImage) {
     unlink($uploadedImage);
 }
 rmdir($taskDir);
+
+// Return JSON response
+header('Content-Type: application/json');
+echo $result;
