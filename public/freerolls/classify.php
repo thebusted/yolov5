@@ -28,9 +28,6 @@ foreach ($images['tmp_name'] as $index => $tmpName) {
     move_uploaded_file($tmpName, $taskDir . $images['name'][$index]);
 }
 
-// Sleep for 5 seconds to simulate the classification process
-sleep(10);
-
 // Call internal service to classify the images at localhost:8000 using GET method
 $result = file_get_contents('http://localhost:8000/predict/' . $task);
 

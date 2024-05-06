@@ -124,16 +124,9 @@ def predict(data):
             if len(det):
                 json_data = det.tolist()
                 
-                # If Windows, change the path to PosixPath
-                if platform.system() == "Windows":
-                    p = pathlib.WindowsPath(p)
-                
-                # Chop filename from "p"
-                # p.name = p.name.split('.')[0]
-                
                 # Put the data in the result array
                 result.append({
-                    "file": p.name,
+                    "file": p,
                     "payload": json_data
                 })
     
