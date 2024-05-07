@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Demo Menu Classification | Freerolls</title>
+    <title>Cattle Muzzle Detection | AIML</title>
     <link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
 </head>
 <body>
 <div class="container">
-    <h1 class="mt-2">Demo Menu Classification | Freerolls</h1>
+    <h1 class="mt-2">Cattle Muzzle Detection | AIML</h1>
     <hr/>
     <div>
         <input class="form-control form-control-lg" id="images" type="file" accept="image/*" multiple>
@@ -24,7 +24,7 @@
         crossorigin="anonymous"></script>
 <script src="//code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script>
-	const CLASS_NAMES = ['burger', 'sandwiches', 'slider', 'warp'];
+	const CLASS_NAMES = ['muzzle'];
 	$(document).ready(function ($) {
 		// When images has changed
 		$('#images').on('change', function () {
