@@ -261,3 +261,6 @@ fabric.properties
 
 # IDE
 .idea/
+
+# Weights
+weights/

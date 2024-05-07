@@ -26,12 +26,14 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-@app.get("/predict/{task_id}")
-def run_predict(task_id: str):
+@app.get("/predict/{model}/{task_id}")
+def run_predict(model: str, task_id: str):
     # Start time
     start_time = time.time()
     
-    result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/freerolls/uploads/{task_id}"})
+    
+    
+    result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/{model}/uploads/{task_id}", "weights": f"/mnt/volume_sgp1_02/aiml/weights/{model}.pt"})
     
     # End time
     end_time = time.time()
@@ -56,7 +58,7 @@ def predict(data):
         
     imgsz = (640, 640)
     
-    weights = "/mnt/volume_sgp1_02/aiml/runs/train/exp/weights/best.pt"
+    weights = str(data['weights'])
     vid_stride = 1
     dnn = False
     half = False
