@@ -44,6 +44,14 @@ TensorFlow.js:
     $ npm start
 """
 
+import platform
+
+# Check if the OS is Windows and change the pathlib.PosixPath to pathlib.WindowsPath
+if platform.system() == "Windows":
+    import pathlib
+    temp = pathlib.PosixPath
+    pathlib.PosixPath = pathlib.WindowsPath
+
 import argparse
 import contextlib
 import json
