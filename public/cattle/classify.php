@@ -5,6 +5,14 @@ error_reporting(E_ALL);
 // Timeout for 1 minute
 set_time_limit(60);
 
+define('MOCKUP', false);
+if (MOCKUP) {
+    // Mockup response
+    header('Content-Type: application/json');
+    echo '{"task_id":"663a008319951","result":[{"file":"/mnt/volume_sgp1_02/aiml/public/cattle/uploads/663a008319951/muzzle.jpg","payload":[[692,686,984,888,0.8549198508262634,0]]}],"inference":1578.5677433013916}';
+    exit(0);
+}
+
 // Save the uploaded image to the server
 $images = $_FILES['images'];
 $uploadDir = __DIR__ . '/uploads/';
@@ -51,7 +59,3 @@ rmdir($taskDir);
 // Return JSON response
 header('Content-Type: application/json');
 echo $result;
-
-//// Mockup response
-//header('Content-Type: application/json');
-//echo '{"task_id":"6638a55cf12f2","result":[{"file":"/mnt/volume_sgp1_02/aiml/public/freerolls/uploads/6638a55cf12f2/483035184095297657.jpg","payload":[[593,196,1107,785,0.8276516199111938,2],[123,98,626,590,0.7433387041091919,2]]}],"inference":1159.2860221862793}';

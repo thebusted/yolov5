@@ -57,6 +57,7 @@ VOC/
 *.torchscript
 *.tflite
 *.h5
+*.keras
 *_saved_model/
 *_web_model/
 *_openvino_model/

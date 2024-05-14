@@ -76,6 +76,9 @@
 						left.className = 'position-relative';
 						body.appendChild(left);
 
+						const center = document.createElement('div');
+						body.appendChild(center);
+
 						const img = document.createElement('img');
 						img.src = URL.createObjectURL(value);
 						img.width = 500;
@@ -128,6 +131,14 @@
 								// Iterate payload
 								for (const [, value] of Object.entries(payload)) {
 									let [x1, y1, x2, y2, score, class_id] = value;
+
+									// Create canvas and add to the center
+									const focusCanvas = document.createElement('canvas');
+									focusCanvas.width = x2 - x1;
+									focusCanvas.height = y2 - y1;
+									focusCanvas.style.maxWidth = 200 + 'px';
+									focusCanvas.getContext('2d').drawImage(img, x1, y1, x2 - x1, y2 - y1, 0, 0, x2 - x1, y2 - y1);
+									center.appendChild(focusCanvas);
 
 									// Scale the coordinates
 									x1 *= scale_factor;

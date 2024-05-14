@@ -14,7 +14,7 @@
     <div>
         <input class="form-control form-control-lg" id="images" type="file" accept="image/*" multiple>
         <div class="form-text">
-            Select you image or list of images for upload and classification. Burger, Slider, Wrap or Sandwiches
+            Select you image or list of images for upload and detect the muzzle of the cattle.
         </div>
     </div>
     <hr/>
@@ -34,7 +34,8 @@
 			for (var i = 0; i < files.length; i++) {
 				const file = files[i];
 				formData.append('images[]', file);
-				FILES[file.name] = files[i];
+				FILES[file.name] = file;
+				console.log('File:', file)
 			}
 
 			// Add the loading spinner
@@ -54,7 +55,7 @@
 
 					// Show if empty result
 					if (result.length === 0) {
-						html += '<div class="alert alert-warning" role="alert">Classification service down</div>';
+						html += '<div class="alert alert-warning" role="alert">the muzzle not found</div>';
 					}
 
 					html += '<div id="viewer"></div>';
@@ -75,6 +76,9 @@
 						const left = document.createElement('div');
 						left.className = 'position-relative';
 						body.appendChild(left);
+
+						const center = document.createElement('div');
+						body.appendChild(center);
 
 						const img = document.createElement('img');
 						img.src = URL.createObjectURL(value);
@@ -128,6 +132,14 @@
 								// Iterate payload
 								for (const [, value] of Object.entries(payload)) {
 									let [x1, y1, x2, y2, score, class_id] = value;
+
+									// Create canvas and add to the center
+									const focusCanvas = document.createElement('canvas');
+									focusCanvas.width = x2 - x1;
+									focusCanvas.height = y2 - y1;
+									focusCanvas.style.maxWidth = 200 + 'px';
+									focusCanvas.getContext('2d').drawImage(img, x1, y1, x2 - x1, y2 - y1, 0, 0, x2 - x1, y2 - y1);
+									center.appendChild(focusCanvas);
 
 									// Scale the coordinates
 									x1 *= scale_factor;
