@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cattle Muzzle Detection | AIML</title>
+    <title>Cattle Diseases Detection | AIML</title>
     <link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
 </head>
 <body>
 <div class="container">
-    <h1 class="mt-2">Cattle Muzzle Detection | AIML</h1>
+    <h1 class="mt-2">Cattle Diseases Detection | AIML</h1>
     <hr/>
     <div>
         <input class="form-control form-control-lg" id="images" type="file" accept="image/*" multiple>
         <div class="form-text">
-            Select you image or list of images for upload and classification. Burger, Slider, Wrap or Sandwiches
+            Select you image or list of images for upload and detect diseases.
         </div>
     </div>
     <hr/>
@@ -24,7 +24,21 @@
         crossorigin="anonymous"></script>
 <script src="//code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script>
-	const CLASS_NAMES = ['muzzle'];
+	const CLASS_NAMES = [
+		'Infected Foot',
+		'Mouth Disease Infected',
+		'Healthy',
+		'Normal Mouth',
+		'Lumpy Skin'
+	];
+	// Class color based on disease, healthy, or normal
+	const CLASS_COLORS = [
+		'#ff0000',
+		'#ba0b0b',
+		'#00ff00',
+		'#0000ff',
+		'#b10236'
+	];
 	$(document).ready(function ($) {
 		// When images has changed
 		$('#images').on('change', function () {
@@ -34,7 +48,8 @@
 			for (var i = 0; i < files.length; i++) {
 				const file = files[i];
 				formData.append('images[]', file);
-				FILES[file.name] = files[i];
+				FILES[file.name] = file;
+				console.log('File:', file)
 			}
 
 			// Add the loading spinner
@@ -54,7 +69,7 @@
 
 					// Show if empty result
 					if (result.length === 0) {
-						html += '<div class="alert alert-warning" role="alert">Classification service down</div>';
+						html += '<div class="alert alert-warning" role="alert">the muzzle not found</div>';
 					}
 
 					html += '<div id="viewer"></div>';
@@ -75,6 +90,9 @@
 						const left = document.createElement('div');
 						left.className = 'position-relative';
 						body.appendChild(left);
+
+						const center = document.createElement('div');
+						body.appendChild(center);
 
 						const img = document.createElement('img');
 						img.src = URL.createObjectURL(value);
@@ -129,13 +147,21 @@
 								for (const [, value] of Object.entries(payload)) {
 									let [x1, y1, x2, y2, score, class_id] = value;
 
+									// Create canvas and add to the center
+									const focusCanvas = document.createElement('canvas');
+									focusCanvas.width = x2 - x1;
+									focusCanvas.height = y2 - y1;
+									focusCanvas.style.maxWidth = 200 + 'px';
+									focusCanvas.getContext('2d').drawImage(img, x1, y1, x2 - x1, y2 - y1, 0, 0, x2 - x1, y2 - y1);
+									center.appendChild(focusCanvas);
+
 									// Scale the coordinates
 									x1 *= scale_factor;
 									y1 *= scale_factor;
 									x2 *= scale_factor;
 									y2 *= scale_factor;
 
-									const color = '#00ff00';
+									const color = CLASS_COLORS[class_id] || '#000000';
 									ctx.strokeStyle = color;
 									ctx.lineWidth = 3;
 									ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
@@ -143,7 +169,7 @@
 									ctx.fillStyle = color;
 									ctx.fillText(CLASS_NAMES[class_id] + ': ' + Number(score).toFixed(2), x1, y1);
 
-									dl_html += '<dt class="col-12 fw-bold">Found "' + CLASS_NAMES[class_id] + '" has confidence is ' + score + '</dt>';
+									dl_html += '<dt class="col-12">Found <strong style="color: ' + CLASS_COLORS[class_id] + '">"' + CLASS_NAMES[class_id] + '"</strong> has confidence is ' + score + '</dt>';
 								}
 
 								dl.innerHTML = dl_html;

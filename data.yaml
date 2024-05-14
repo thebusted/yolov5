@@ -1,0 +1,11 @@
+names:
+- Infected Foot
+- Mouth Disease Infected
+- Healthy
+- Normal Mouth
+- Lumpy Skin
+nc: 5
+path: dataset
+test: test
+train: train
+val: valid
