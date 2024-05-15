@@ -154,7 +154,7 @@ def training(data):
         }
     
     # Load the image
-    train_image = cv2.imread('./tests/cattle/test/cattle_0100/cattle_0100_DSCF3865.jpg')
+    train_image = cv2.imread(file)
 
     train_image = cv2.cvtColor(train_image, cv2.COLOR_BGR2RGB)
 
