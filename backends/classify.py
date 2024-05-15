@@ -131,3 +131,57 @@ def matching(data):
         })
         
     return scores
+
+# Use SIFT to extract features from the image
+def training(data):
+    # Get the file of the training data
+    file = data['file']
+    
+    # Get rancher ID
+    uid = data['uid']
+    
+    # Get cattle ID
+    cid = data['cid']
+    
+    # Get the resize
+    resize = data['resize']
+    
+    # Check the path is not None
+    if file is None or not isfile(file):
+        return {
+            "success": False,
+            "message": "File not found"
+        }
+    
+    # Load the image
+    train_image = cv2.imread('./tests/cattle/test/cattle_0100/cattle_0100_DSCF3865.jpg')
+
+    train_image = cv2.cvtColor(train_image, cv2.COLOR_BGR2RGB)
+
+    # Resize the image with width of 640 and automatic height
+    train_image = cv2.resize(train_image, (resize, int(resize*train_image.shape[0]/train_image.shape[1])))
+
+    # Convert the training image to gray scale
+    train_image = cv2.cvtColor(train_image, cv2.COLOR_RGB2GRAY)
+    
+    # Create the SIFT object
+    sift = cv2.SIFT_create()
+
+    keypoints, descriptor = sift.detectAndCompute(train_image, None)
+    
+    # Folder to save the model
+    model_folder = f"./weights/identify/{uid}"
+    model_file = f"{model_folder}/{cid}.h5"
+    
+    # Save
+    if os.path.exists(model_folder) == False:
+        os.makedirs(model_folder)
+    if os.path.isfile(model_file):
+        os.remove(model_file)
+    with h5py.File(model_file, 'w') as hf:
+        hf.create_dataset('descriptor', data=descriptor)
+    
+    return {
+        "success": True,
+        "message": "Training success"
+    }

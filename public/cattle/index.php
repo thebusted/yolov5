@@ -9,12 +9,12 @@
 </head>
 <body>
 <div class="container">
-    <h1 class="mt-2">Cattle Diseases Detection | AIML</h1>
+    <h1 class="mt-2">Cattle Muzzle Detection | AIML</h1>
     <hr/>
     <div>
         <input class="form-control form-control-lg" id="images" type="file" accept="image/*" multiple>
         <div class="form-text">
-            Select you image or list of images for upload and detect diseases.
+            Select you image or list of images for upload and detect the muzzle.
         </div>
     </div>
     <hr/>
@@ -25,11 +25,7 @@
 <script src="//code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script>
 	const CLASS_NAMES = [
-		'Infected Foot',
-		'Mouth Disease Infected',
-		'Healthy',
-		'Normal Mouth',
-		'Lumpy Skin'
+		'Muzzle'
 	];
 	// Class color based on disease, healthy, or normal
 	const CLASS_COLORS = [

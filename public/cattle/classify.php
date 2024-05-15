@@ -37,7 +37,7 @@ foreach ($images['tmp_name'] as $index => $tmpName) {
 }
 
 // Call internal service to classify the images at localhost:8000 using GET method
-$service = 'http://localhost:8000/predict/cattle/' . $task;
+$service = 'http://localhost:8000/detect/cattle-muzzle/' . $task . '?bucket=' . urlencode($taskDir);
 
 // Initialize cURL
 $ch = curl_init($service);
