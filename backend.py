@@ -1,5 +1,8 @@
 import platform
 import time
+import os
+
+from backends.classify import matching, classify
 
 # Check if the OS is Windows and change the pathlib.PosixPath to pathlib.WindowsPath
 if platform.system() == "Windows":
@@ -8,32 +11,31 @@ if platform.system() == "Windows":
     pathlib.PosixPath = pathlib.WindowsPath
 
 from pathlib import Path
+from backends.detect import detect
 
-import torch
-
-from models.common import DetectMultiBackend
-from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages
-from utils.general import (
-    Profile,
-    check_file,
-    check_img_size,
-    non_max_suppression,
-    scale_boxes,
-)
-from utils.torch_utils import select_device
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 
 app = FastAPI()
 
-@app.get("/predict/{model}/{task_id}")
-def run_predict(model: str, task_id: str):
+@app.get("/detect/{model}/{task_id}")
+def run_predict(model: str, task_id: str, bucket: str = Query(None)):
     # Start time
     start_time = time.time()
     
+    # Weight path merge with current_dir
+    weight_path = Path(__file__).resolve().parent.joinpath('weights', 'detect', f"{model}.pt")
     
+    print("bucket:", bucket)
     
-    result = predict({"source": f"/mnt/volume_sgp1_02/aiml/public/{model}/uploads/{task_id}", "weights": f"/mnt/volume_sgp1_02/aiml/weights/{model}.pt"})
+    # Set result to None
+    result = None
+    
+    # Check bucket is not None and is directory
+    if bucket is not None and os.path.isdir(bucket):
+        result = detect({
+            "source": bucket,
+            "weights": weight_path
+        })
     
     # End time
     end_time = time.time()
@@ -45,102 +47,35 @@ def run_predict(model: str, task_id: str):
         "result": result,
         "inference": process_time
     }
-
-# 
-def predict(data):
-    print('Data:', data)
     
-    source = str(data['source'])
-    is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
+@app.get("/identify/{uid}/{task_id}")
+def run_predict(uid: str, task_id: str, file: str = Query(None)):
+    # Start time
+    start_time = time.time()
     
-    if is_file:
-        source = check_file(source)  # download
-        
-    imgsz = (640, 640)
+    # Model path
+    model_path = Path(__file__).resolve().parent.joinpath('weights', 'identify', f"{uid}")
     
-    weights = str(data['weights'])
-    vid_stride = 1
-    dnn = False
-    half = False
-    device = ""
-    augment = False
+    print("file:", file)
     
-    conf_thres = 0.25
-    iou_thres = 0.45
-    classes = None
-    agnostic_nms = False
-    max_det = 1000
-    line_thickness = 3
-
-    # Load model
-    device = select_device(device)
-    model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
-    stride, names, pt = model.stride, model.names, model.pt
-    imgsz = check_img_size(imgsz, s=stride)  # check image size
-        
-    # Dataloader
-    bs = 1  # batch_size
-    dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
-    vid_path, vid_writer = [None] * bs, [None] * bs
+    # Set result to None
+    result = None
     
-    print('Dataset:', dataset)
-    print('Source:', source)
+    # Check bucket is not None and is directory
+    if file is not None and os.path.isfile(file):
+        result = matching({
+            "resize": 240,
+            "file": file,
+            "model": model_path
+        })
     
-    result = []
+    # End time
+    end_time = time.time()
     
-     # Run inference
-    model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
-    seen, windows, dt = 0, [], (Profile(device=device), Profile(device=device), Profile(device=device))
-    for path, im, im0s, vid_cap, s in dataset:
-        with dt[0]:
-            im = torch.from_numpy(im).to(model.device)
-            im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
-            im /= 255  # 0 - 255 to 0.0 - 1.0
-            if len(im.shape) == 3:
-                im = im[None]  # expand for batch dim
-            if model.xml and im.shape[0] > 1:
-                ims = torch.chunk(im, im.shape[0], 0)
-                
-        # Inference
-        with dt[1]:
-            # visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
-            if model.xml and im.shape[0] > 1:
-                print('if')
-                # pred = None
-                # for image in ims:
-                #     if pred is None:
-                #         pred = model(image, augment=augment, visualize=visualize).unsqueeze(0)
-                #     else:
-                #         pred = torch.cat((pred, model(image, augment=augment, visualize=visualize).unsqueeze(0)), dim=0)
-                # pred = [pred, None]
-            else:
-                print('else')
-                pred = model(im, augment=augment)
-                
-        # NMS
-        with dt[2]:
-            pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
-            
-        print('Prediction:', pred)
-        
-        # Iterate through predictions
-        for i, det in enumerate(pred):
-            p, im0, frame = path, im0s.copy(), getattr(dataset, "frame", 0)
-            
-            print('Path:', path)
-            print('p:', p)
-            
-            if len(det):
-                # Rescale boxes from img_size to im0 size
-                det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
-                
-                json_data = det.tolist()
-                
-                # Put the data in the result array
-                result.append({
-                    "file": p,
-                    "payload": json_data
-                })
-    
-    print('Result:', result)
-    return result
+    # Process time in milliseconds
+    process_time = (end_time - start_time) * 1000
+    return {
+        "task_id": task_id,
+        "result": result,
+        "inference": process_time
+    }
