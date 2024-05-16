@@ -9,8 +9,11 @@ if (isset($_SESSION['cattle_register'])) {
         $muzzle = $register['file'];
         $task = $register['task'];
 
+        // Create unique name for task
+        $cid = uniqid();
+
         // Initialize cURL
-        $service_register = 'http://localhost:8000/register/' . $uid . '/' . $task . '?file=' . urlencode($muzzle);
+        $service_register = 'http://localhost:8000/register/' . $uid . '/' . $task . '?file=' . urlencode($muzzle) . '&cid=' . $cid;
         error_log("Service register: " . $service_register . "\n");
 
         $ch = curl_init($service_register);
@@ -23,6 +26,8 @@ if (isset($_SESSION['cattle_register'])) {
         // Execute cURL
         $register = curl_exec($ch);
         $register = json_decode($register, true);
+
+        error_log("Register: " . print_r($register, true) . "\n");
 
         // Close curl
         curl_close($ch);

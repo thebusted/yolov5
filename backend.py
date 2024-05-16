@@ -90,13 +90,17 @@ def run_register(uid: str, task_id: str, file: str = Query(None), cid: str = Que
     # Set result to None
     result = None
     
+    # Model path
+    store = Path(__file__).resolve().parent.joinpath('weights', 'identify', f"{uid}")
+    
     # Check bucket is not None and is directory
     if file is not None and os.path.isfile(file):
         result = training({
             "resize": 240,
             "file": file,
             "cid": cid,
-            "uid": uid
+            "uid": uid,
+            "store": store
         })
     
     # End time

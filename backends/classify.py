@@ -146,6 +146,9 @@ def training(data):
     # Get the resize
     resize = data['resize']
     
+    # Store path
+    store = data['store']
+    
     # Check the path is not None
     if file is None or not isfile(file):
         return {
@@ -170,8 +173,7 @@ def training(data):
     keypoints, descriptor = sift.detectAndCompute(train_image, None)
     
     # Folder to save the model
-    model_folder = f"./weights/identify/{uid}"
-    model_file = f"{model_folder}/{cid}.h5"
+    model_file = f"{store}/{cid}.h5"
     
     # Save
     if os.path.exists(model_folder) == False:
