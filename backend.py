@@ -3,7 +3,6 @@ import time
 import os
 
 from backends.classify import matching, classify, training
-from backends.rtdb import rtdb_test
 
 # Check if the OS is Windows and change the pathlib.PosixPath to pathlib.WindowsPath
 if platform.system() == "Windows":
@@ -15,8 +14,6 @@ from pathlib import Path
 from backends.detect import detect
 
 from fastapi import FastAPI, Query
-
-rtdb_test()
 
 app = FastAPI()
 
