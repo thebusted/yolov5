@@ -48,7 +48,7 @@ if (isset($_SESSION['cattle_register'])) {
 //        }
     }
 
-    unset($_SESSION['cattle_register']);
+//    unset($_SESSION['cattle_register']);
 }
 
-header('Location: ./');
+//header('Location: ./');
