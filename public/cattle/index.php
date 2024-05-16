@@ -58,7 +58,7 @@
 				processData: false,
 				success: function (response) {
 					// Process time html
-					let html = '<div class="alert alert-success p-2" style="font-size: 0.85em" role="alert">Classification completed in <strong>' + Math.round(response.inference) + '</strong> ms</div>';
+					let html = '<div class="alert alert-success p-2" style="font-size: 0.85em" role="alert">Detect Muzzle completed in <strong>' + Math.round(response.inference) + '</strong> ms</div>';
 
 					// Iterate result
 					const result = Array.from(response.result);
@@ -92,7 +92,7 @@
 
 						const img = document.createElement('img');
 						img.src = URL.createObjectURL(value);
-						img.width = 500;
+						img.width = 200;
 						left.appendChild(img);
 
 						// Create canvas

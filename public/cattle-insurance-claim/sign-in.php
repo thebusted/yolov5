@@ -14,9 +14,12 @@ try {
 
     $customToken = $auth->createCustomToken($data['localId'] ?? '');
 
+    $auth->signInWithRefreshToken($data['refreshToken'] ?? '');
+
     $_SESSION['idToken'] = $data['idToken'];
     $_SESSION['refreshToken'] = $data['refreshToken'];
     $_SESSION['customToken'] = $customToken->toString();
+    $_SESSION['expiresIn'] = time() + intval($data['expiresIn']);
 } catch (FailedToSignIn $e) {
     $_SESSION['error'] = $e->getMessage();
 } finally {
