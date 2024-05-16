@@ -176,8 +176,8 @@ def training(data):
     model_file = f"{store}/{cid}.h5"
     
     # Save
-    if os.path.exists(model_folder) == False:
-        os.makedirs(model_folder)
+    if os.path.exists(store) == False:
+        os.makedirs(store)
     if os.path.isfile(model_file):
         os.remove(model_file)
     with h5py.File(model_file, 'w') as hf:
