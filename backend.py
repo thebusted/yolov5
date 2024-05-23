@@ -113,3 +113,35 @@ def run_register(uid: str, task_id: str, file: str = Query(None), cid: str = Que
         "result": result,
         "inference": process_time
     }
+    
+@app.get("/classify/{type}/{task_id}")
+def run_classify(type: str, task_id: str, file: str = Query(None)):
+    # Start time
+    start_time = time.time()
+    
+    # Model path
+    model_path = Path(__file__).resolve().parent.joinpath('weights', 'classify', f"{type}.keras")
+    
+    print("file:", file)
+    
+    # Set result to None
+    result = None
+    
+    # Check bucket is not None and is directory
+    if file is not None and os.path.isfile(file):
+        result = classify({
+            "file": file,
+            "model": model_path
+        })
+    
+    # End time
+    end_time = time.time()
+    
+    # Process time in milliseconds
+    process_time = (end_time - start_time) * 1000
+    return {
+        "task_id": task_id,
+        "result": result,
+        "inference": process_time
+    }
+    
