@@ -36,17 +36,8 @@ def classify(data):
     # Hot encode to label
     hot_encode = np.argmax(predict)
     
-    label = ['cattle_0100','cattle_0200']
-    result = label[hot_encode]
-    
-    print('-------------------')
-    print(predict)
-    print('file:'+str(file))
-    print('predict:'+str(result))
-    print('-------------------')
-    
     return {
-        "predict": str(result),
+        "predict": str(hot_encode),
         "probability": float(probability)
     }
     

@@ -2,7 +2,9 @@
 require_once __DIR__ . '/_inc_/config.php';
 
 $error = $_SESSION['error'] ?? null;
-unset($_SESSION['error']);
+if ($error) {
+    unset($_SESSION['error']);
+}
 
 $idToken = $_SESSION['idToken'] ?? null;
 $refreshToken = $_SESSION['refreshToken'] ?? null;
@@ -315,7 +317,7 @@ $action = $_GET['a'] ?? null;
                     <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="#">
+                                <a class="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="./">
                                     <svg class="bi">
                                         <use xlink:href="#house-fill"/>
                                     </svg>
@@ -591,14 +593,22 @@ $action = $_GET['a'] ?? null;
 														dl_html += '<dt class="col-12">Found <strong style="color: ' + CLASS_COLORS[class_id] + '">"' + CLASS_NAMES[class_id] + '"</strong> has confidence is ' + score + '</dt>';
 													}
 
-													if (response.identify?.scores) {
-														const scores = Array.from(response.identify.scores);
-														if (scores.length) {
-															dl_html += `<dt class="col-12 text-success">This cattle already registered in your account</dt>`
-                                                        } else {
-															dl_html += `<dt class="col-12 text-warning">This cattle didn't register in your account yet. do you want to <a href="./cattle-register.php">register</a>?</dt>`;
-                                                        }
+													let match = false;
+													const identify = Array.from(response.identify);
+													if (identify.length) {
+														for (const obj of identify) {
+															console.log('Obj:', obj)
+															console.log('Similar:', obj.similar)
+															if (obj.score >= 10) {
+																match = true;
+																dl_html += `<dt class="col-12 text-success">This cattle already registered and has ID "${obj.cid}" in your account<br /><img class="w-100" src="./cattle/${USER.uid}/${obj.cid}/original.jpg" /></dt>`;
+															}
+														}
                                                     }
+
+													if (!match) {
+														dl_html += `<dt class="col-12 text-warning">This cattle didn't register in your account yet. do you want to <a href="./cattle-register.php">register</a>?</dt>`;
+													}
 
 													dl.innerHTML = dl_html;
 
@@ -622,6 +632,217 @@ $action = $_GET['a'] ?? null;
 						});
                     </script>
                 <?php elseif ($action === 'nc'): ?>
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Claim form</h1>
+                    </div>
+                    <div class="d-none">
+                        <h3>Picture for Identify your cattle</h3>
+                        <input class="form-control form-control-lg" id="cattle" type="file" accept="image/*">
+                        <div class="form-text">
+                            Choose a pictures of a cow that shows its front and muzzle clearly.
+                        </div>
+                    </div>
+                <hr class="d-none" />
+                    <div>
+                        <h3>Pictures for claim diseases</h3>
+                        <input class="form-control form-control-lg" id="diseases" type="file" accept="image/*" multiple>
+                        <div class="form-text">
+                            Choose a pictures of a cow that has diseases.
+                        </div>
+                    </div>
+                <hr/>
+                    <div id="output" class="mt-2"></div>
+                    <script src="//code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+                    <script>
+	                    const CLASS_NAMES = [
+		                    'Infected Foot',
+		                    'Mouth Disease Infected',
+		                    'Healthy',
+		                    'Normal Mouth',
+		                    'Lumpy Skin'
+	                    ];
+		                // Class color based on disease, healthy, or normal
+		                const CLASS_COLORS = [
+			                '#ff0000',
+			                '#ba0b0b',
+			                '#00ff00',
+			                '#0000ff',
+			                '#b10236'
+		                ];
+		                $(document).ready(function ($) {
+			                // When images has changed
+			                $('#diseases').on('change', function () {
+				                const FILES = {};
+				                const files = $(this)[0].files;
+				                const formData = new FormData();
+				                for (var i = 0; i < files.length; i++) {
+					                const file = files[i];
+					                formData.append('cattle[]', file);
+					                FILES[file.name] = file;
+					                console.log('File:', file)
+				                }
+				                formData.append('uid', USER.uid);
+
+				                // Add the loading spinner
+				                $('#output').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+				                $.ajax({
+					                url: './apis/claims/',
+					                type: 'post',
+					                data: formData,
+					                contentType: false,
+					                processData: false,
+					                success: function (response) {
+						                // Process time html
+						                let html = '<div class="alert alert-success p-2" style="font-size: 0.85em" role="alert">Muzzle detection completed in <strong>' + Math.round(response.inference) + '</strong> ms</div>';
+
+						                // Iterate result
+						                const result = Array.from(response.result);
+
+						                // Show if empty result
+						                if (result.length === 0) {
+							                html += '<div class="alert alert-warning" role="alert">the muzzle not found</div>';
+						                }
+
+						                html += '<div id="viewer"></div>';
+
+						                $('#output').html(html);
+
+						                const viewer = $('#viewer').get(0);
+						                // FILES
+						                for (const [, value] of Object.entries(FILES)) {
+							                const card = document.createElement('div');
+							                card.className = 'card rounded-0 shadow-sm mb-3';
+							                viewer.appendChild(card);
+
+							                const body = document.createElement('div');
+							                body.className = 'card-body d-flex gap-2';
+							                card.appendChild(body);
+
+							                const left = document.createElement('div');
+							                left.className = 'position-relative';
+							                body.appendChild(left);
+
+							                const center = document.createElement('div');
+							                body.appendChild(center);
+
+							                const img = document.createElement('img');
+							                img.src = URL.createObjectURL(value);
+							                img.width = 300;
+							                left.appendChild(img);
+
+							                // Create canvas
+							                const canvas = document.createElement('canvas');
+
+							                // Make the canvas as overlay
+							                canvas.style.position = 'absolute';
+							                canvas.style.top = '0';
+							                canvas.style.left = '0';
+							                canvas.style.zIndex = '1';
+							                canvas.style.pointerEvents = 'none';
+							                left.appendChild(canvas);
+
+							                const right = document.createElement('div');
+							                right.className = 'flex-fill';
+							                body.appendChild(right);
+
+							                img.onload = function () {
+								                // Get the original image size
+								                canvas.width = img.width;
+								                canvas.height = img.height;
+
+								                console.log('Value:', value.name)
+								                const result = Array.from(response.result).find(r => {
+									                const file_name = r.file.toString().split('/').pop();
+									                return file_name === value.name;
+								                });
+								                if (result) {
+									                const payload = Array.from(result.payload);
+
+									                // Create Description list alignment
+									                const dl = document.createElement('dl');
+									                dl.className = 'row';
+									                let dl_html = '';
+									                right.appendChild(dl);
+
+									                // Create <pre> element
+									                const pre = document.createElement('pre');
+									                pre.className = 'border p-2';
+									                pre.innerHTML = JSON.stringify(payload, null, 2);
+									                right.appendChild(pre);
+
+									                // Scale factor
+									                const scale_factor = img.width / img.naturalWidth;
+
+									                const ctx = canvas.getContext('2d');
+									                // Iterate payload
+									                for (const [, value] of Object.entries(payload)) {
+										                let [x1, y1, x2, y2, score, class_id] = value;
+
+										                // Create canvas and add to the center
+										                const focusCanvas = document.createElement('canvas');
+										                focusCanvas.width = x2 - x1;
+										                focusCanvas.height = y2 - y1;
+										                focusCanvas.style.maxWidth = 200 + 'px';
+										                focusCanvas.getContext('2d').drawImage(img, x1, y1, x2 - x1, y2 - y1, 0, 0, x2 - x1, y2 - y1);
+										                center.appendChild(focusCanvas);
+
+										                // Scale the coordinates
+										                x1 *= scale_factor;
+										                y1 *= scale_factor;
+										                x2 *= scale_factor;
+										                y2 *= scale_factor;
+
+										                const color = CLASS_COLORS[class_id] || '#000000';
+										                ctx.strokeStyle = color;
+										                ctx.lineWidth = 3;
+										                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+										                ctx.font = '16px Arial';
+										                ctx.fillStyle = color;
+										                ctx.fillText(CLASS_NAMES[class_id] + ': ' + Number(score).toFixed(2), x1, y1);
+
+										                dl_html += '<dt class="col-12">Found <strong style="color: ' + CLASS_COLORS[class_id] + '">"' + CLASS_NAMES[class_id] + '"</strong> has confidence is ' + Number(score).toFixed(4) + '</dt>';
+									                }
+
+									                if (response.identify) {
+										                let match = false;
+										                const identify = Array.from(response.identify);
+										                if (identify.length) {
+											                for (const obj of identify) {
+												                console.log('Obj:', obj)
+												                console.log('Similar:', obj.similar)
+												                if (obj.score >= 10) {
+													                match = true;
+													                dl_html += `<dt class="col-12 text-success">This cattle already registered and has ID "${obj.cid}" in your account<br /><img class="w-100" src="./cattle/${USER.uid}/${obj.cid}/original.jpg" /></dt>`;
+												                }
+											                }
+										                }
+
+										                if (!match) {
+											                dl_html += `<dt class="col-12 text-warning">This cattle didn't register in your account yet. do you want to <a href="./cattle-register.php">register</a>?</dt>`;
+										                }
+                                                    }
+
+									                dl.innerHTML = dl_html;
+
+									                right.appendChild(dl);
+
+									                console.log('Payload:', payload)
+								                } else {
+									                const alert = document.createElement('div');
+									                alert.className = 'alert alert-warning';
+									                alert.textContent = 'No classification result';
+									                right.appendChild(alert);
+								                }
+							                };
+						                }
+					                }
+				                });
+
+				                // Clear the input
+				                $(this).val('');
+			                });
+		                });
+                    </script>
                 <?php else: ?>
                     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                         <h1 class="h2">Dashboard</h1>
@@ -632,27 +853,13 @@ $action = $_GET['a'] ?? null;
                         </div>
                     </div>
 
-                    <div class="row row-cols-1 row-cols-sm-3 row-cols-md-4 g-3">
-                        <div class="col">
-                            <div class="card shadow-sm">
-                                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail"
-                                     preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title>
-                                    <rect width="100%" height="100%" fill="#55595c"></rect>
-                                    <text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text>
-                                </svg>
-                                <div class="card-body">
-                                    <h4 class="h5 fw-bold">Cattle 0001</h4>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group d-none">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
-                                        </div>
-                                        <small class="text-body-secondary">9 mins</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <?php if (isset($_SESSION['message'])): ?>
+                    <div class="alert alert-success" role="alert">
+                        <?php echo $_SESSION['message'] ?>
                     </div>
+                    <?php endif; ?>
+
+                    <div class="row row-cols-1 row-cols-sm-3 row-cols-md-4 g-3" id="cattle-list"></div>
 
                     <canvas class="my-4 w-100 d-none" id="myChart" width="900" height="380"></canvas>
 
@@ -678,11 +885,7 @@ $action = $_GET['a'] ?? null;
                             </thead>
                             <tbody>
                             <tr>
-                                <td>1,001</td>
-                                <td>random</td>
-                                <td>data</td>
-                                <td>placeholder</td>
-                                <td>text</td>
+                                <td colspan="1000" class="text-muted text-center">Loading data &hellip;</td>
                             </tr>
                             </tbody>
                         </table>
@@ -728,7 +931,7 @@ $action = $_GET['a'] ?? null;
                 <label for="floatingPassword">Password</label>
             </div>
 
-            <div class="form-check text-start my-3">
+            <div class="form-check text-start my-3 d-none">
                 <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
                 <label class="form-check-label" for="flexCheckDefault">
                     Remember me
@@ -778,6 +981,33 @@ $action = $_GET['a'] ?? null;
 
 			console.log(user);
 			window.USER = user;
+
+			<?php if ($action === null): ?>
+			// Get cattle
+			get(ref(db, `users/${user.uid}/cattle`)).then((snapshot) => {
+				snapshot.forEach((child) => {
+                    const key = child.key;
+                    const value = child.val();
+                    console.log(key, value);
+					let html = `<div class="col">
+                            <div class="card shadow-sm">
+                                <img src="./cattle/${user.uid}/${key}/original.${value.ext}" />
+                                <div class="card-body">
+                                    <h4 class="h5 fw-bold">${key}</h4>
+                                    <div class="d-flex justify-content-between align-items-center d-none">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                        </div>
+                                        <small class="text-body-secondary">9 mins</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+					document.getElementById('cattle-list').innerHTML += html;
+                });
+			});
+			<?php endif; ?>
 		})
 		.catch((error) => {
 			const errorCode = error.code;

@@ -121,12 +121,15 @@ if (json_last_error() === JSON_ERROR_NONE) {
 
             // Save cropped image
             if ($croppedImage) {
-                $croppedImageFile = $taskDir . 'muzzle.jpg';
+                $croppedImageFile = $taskDir . 'muzzle.' . $ext;
                 imagejpeg($croppedImage, $croppedImageFile);
-                imagedestroy($croppedImage);
             }
 
+            $originalImageFile = $taskDir . 'original.' . $ext;
+            imagejpeg($image, $originalImageFile);
+
             imagedestroy($image);
+            imagedestroy($croppedImage);
 
             // Initialize cURL
             $service_identify = 'http://localhost:8000/identify/' . $uid . '/' . $task . '?file=' . urlencode($croppedImageFile);
@@ -150,26 +153,23 @@ if (json_last_error() === JSON_ERROR_NONE) {
 
             $result['identify'] = $identify['result'];
 
-            if (empty($identify['result']['scores'])) {
-                $auto_delete = false;
-
-                $_SESSION['cattle_register'] = [
-                    'uid' => $uid,
-                    'task' => $task,
-                    'taskDir' => $taskDir,
-                    'file' => $croppedImageFile
-                ];
-            }
+            $_SESSION['cattle_register'] = [
+                'uid' => $uid,
+                'task' => $task,
+                'ext' => $ext,
+                'taskDir' => $taskDir,
+                'file' => $croppedImageFile
+            ];
         }
     }
 }
 
 if ($auto_delete) {
-    // Delete the task directory
-    foreach ($uploadedImages as $uploadedImage) {
-        unlink($uploadedImage);
-    }
-    rmdir($taskDir);
+//    // Delete the task directory
+//    foreach ($uploadedImages as $uploadedImage) {
+//        unlink($uploadedImage);
+//    }
+//    rmdir($taskDir);
 }
 
 // Return JSON response

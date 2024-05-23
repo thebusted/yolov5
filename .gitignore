@@ -266,5 +266,8 @@ fabric.properties
 # Weights
 weights/
 
+# Cattle
+cattle/
+
 # Vendor
 vendor/
