@@ -269,5 +269,8 @@ weights/
 # Cattle
 cattle/
 
+# Dataset
+dataset/
+
 # Vendor
 vendor/
