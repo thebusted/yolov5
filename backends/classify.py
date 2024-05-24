@@ -16,7 +16,7 @@ def classify(data):
     print('model file:', data['model'])
     
     # Width model
-    width = 128
+    width = 224
     
     # File
     file = data['file']
@@ -30,6 +30,9 @@ def classify(data):
     rImg = np.reshape(rImg ,(1,width,width,3))
     predict = model.predict(rImg)
     
+    # Convert predict to array
+    scores = np.array(predict)
+    
     # Print predict result
     probability = np.max(predict)
     
@@ -38,7 +41,8 @@ def classify(data):
     
     return {
         "predict": str(hot_encode),
-        "probability": float(probability)
+        "probability": float(probability),
+        "scores": scores.tolist()
     }
     
 def matching(data):
