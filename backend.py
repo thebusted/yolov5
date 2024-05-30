@@ -13,6 +13,8 @@ if platform.system() == "Windows":
 from pathlib import Path
 from backends.detect import detect
 
+from backends.v8.detect import detect as detect_v8
+
 from fastapi import FastAPI, Query
 
 app = FastAPI()
@@ -33,6 +35,37 @@ def run_detect(model: str, task_id: str, bucket: str = Query(None)):
     # Check bucket is not None and is directory
     if bucket is not None and os.path.isdir(bucket):
         result = detect({
+            "source": bucket,
+            "weights": weight_path
+        })
+    
+    # End time
+    end_time = time.time()
+    
+    # Process time in milliseconds
+    process_time = (end_time - start_time) * 1000
+    return {
+        "task_id": task_id,
+        "result": result,
+        "inference": process_time
+    }
+    
+@app.get("/v8/detect/{model}/{task_id}")
+def run_detect(model: str, task_id: str, bucket: str = Query(None)):
+    # Start time
+    start_time = time.time()
+    
+    # Weight path merge with current_dir
+    weight_path = Path(__file__).resolve().parent.joinpath('weights', 'detect', f"{model}.pt")
+    
+    print("bucket:", bucket)
+    
+    # Set result to None
+    result = None
+    
+    # Check bucket is not None and is directory
+    if bucket is not None and os.path.isdir(bucket):
+        result = detect_v8({
             "source": bucket,
             "weights": weight_path
         })
@@ -144,4 +177,3 @@ def run_classify(type: str, task_id: str, file: str = Query(None)):
         "result": result,
         "inference": process_time
     }
-    

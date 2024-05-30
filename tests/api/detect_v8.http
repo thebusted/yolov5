@@ -1,0 +1,1 @@
+GET http://localhost:8000/v8/detect/indian-bovine-breeds/123456?bucket=./dataset/indian-bovine-breeds/Umblachery

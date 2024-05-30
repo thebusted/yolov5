@@ -36,11 +36,8 @@ foreach ($images['tmp_name'] as $index => $tmpName) {
     move_uploaded_file($tmpName, $taskDir . $images['name'][$index]);
 }
 
-// Get latest uploaded image
-$file = $uploadedImages[count($uploadedImages) - 1];
-
 // Call internal service to classify the images at localhost:8000 using GET method
-$service = 'http://localhost:8000/classify/indian-bovine-breeds-v2/' . $task . '?file=' . urlencode($file);
+$service = 'http://localhost:8000/v8/detect/indian-bovine-breeds/' . $task . '?bucket=' . urlencode($taskDir);
 
 // Initialize cURL
 $ch = curl_init($service);
