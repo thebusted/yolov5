@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cattle Diseases Detection | AIML</title>
+    <title>Cattle Muzzle Detection | AIML</title>
     <link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
 </head>
@@ -132,7 +132,7 @@
 								// Create <pre> element
 								const pre = document.createElement('pre');
 								pre.className = 'border p-2';
-								pre.innerHTML = JSON.stringify(payload, null, 2);
+								pre.innerHTML = JSON.stringify(payload, null, 4);
 								right.appendChild(pre);
 
 								// Scale factor

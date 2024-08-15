@@ -33,7 +33,10 @@ def detect(data):
             # 6 decimal on conf
             conf = round(conf, 6)
             
-            json_data.append([x1, y1, x2, y2, conf, cls, width, height])
+            # Label
+            label = model.names[cls]
+            
+            json_data.append([x1, y1, x2, y2, conf, cls, width, height, label])
             
 
         predicts.append({

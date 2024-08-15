@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Indian Bovine Breeds | AIML</title>
+    <title>Car Damage Detection | AIML</title>
     <link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
 </head>
 <body>
 <div class="container">
-    <h1 class="mt-2">Indian Bovine Breeds | AIML</h1>
+    <h1 class="mt-2">Car Damage Detection | AIML</h1>
     <hr/>
     <div>
         <input class="form-control form-control-lg" id="images" type="file" accept="image/*" multiple>
         <div class="form-text">
-            Select you image or list of images for upload and classify Indian Bovine Breeds.
+            Select you image or list of images for upload.
         </div>
     </div>
     <hr/>
@@ -24,51 +24,24 @@
         crossorigin="anonymous"></script>
 <script src="//code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script>
-	const CLASS_NAMES = ['Alambadi', 'Amritmahal', 'Ayrshire', 'Banni', 'Bargur', 'Bhadawari', 'Brown_Swiss', 'Dangi', 'Deoni', 'Gir', 'Guernsey', 'Hallikar', 'Hariana', 'Holstein_Friesian', 'Jaffrabadi', 'Jersey', 'Kangayam', 'Kankrej', 'Kasargod', 'Kenkatha', 'Kherigarh', 'Khillari', 'Krishna_Valley', 'Malnad_gidda', 'Mehsana', 'Murrah', 'Nagori', 'Nagpuri', 'Nili_Ravi', 'Nimari', 'Ongole', 'Pulikulam', 'Rathi', 'Red_Dane', 'Red_Sindhi', 'Sahiwal', 'Surti', 'Tharparkar', 'Toda', 'Umblachery', 'Vechur'];
+	const CLASS_NAMES = [
+		'Minor',
+		'Moderate',
+		'Severe',
+	];
 	// Class color based on disease, healthy, or normal
-	const CLASS_COLORS = {
-		'Alambadi': '#FF0000',       // Red
-		'Amritmahal': '#008000',       // Green
-		'Ayrshire': '#FFFF00',       // Yellow
-		'Banni': '#800080',         // Purple
-		'Bargur': '#FFC0CB',       // Pink
-		'Bhadawari': '#0000FF',       // Blue
-		'Brown_Swiss': '#A52A2A',     // Brown
-		'Dangi': '#FFD700',       // Gold
-		'Deoni': '#00FFFF',       // Cyan
-		'Gir': '#FFA500',       // Orange
-		'Guernsey': '#FF1493',       // Deep Pink
-		'Hallikar': '#2E8B57',       // Sea Green
-		'Hariana': '#8B0000',       // Dark Red
-		'Holstein_Friesian': '#4B0082',   // Indigo
-		'Jaffrabadi': '#F08080',       // Light Coral
-		'Jersey': '#90EE90',       // Light Green
-		'Kangayam': '#BDB76B',       // Dark Khaki
-		'Kankrej': '#F5DEB3',       // Wheat
-		'Kasargod': '#FF69B4',       // Hot Pink
-		'Kenkatha': '#4682B4',       // Steel Blue
-		'Kherigarh': '#D2691E',       // Chocolate
-		'Khillari': '#9ACD32',       // Yellow Green
-		'Krishna_Valley': '#3CB371',     // Medium Sea Green
-		'Malnad_gidda': '#6495ED',     // Cornflower Blue
-		'Mehsana': '#DC143C',       // Crimson
-		'Murrah': '#FF4500',       // Orange Red
-		'Nagori': '#DA70D6',       // Orchid
-		'Nagpuri': '#00CED1',       // Dark Turquoise
-		'Nili_Ravi': '#BC8F8F',       // Rosy Brown
-		'Nimari': '#CD853F',       // Peru
-		'Ongole': '#20B2AA',       // Light Sea Green
-		'Pulikulam': '#6A5ACD',       // Slate Blue
-		'Rathi': '#7B68EE',       // Medium Slate Blue
-		'Red_Dane': '#BA55D3',       // Medium Orchid
-		'Red_Sindhi': '#9370DB',       // Medium Purple
-		'Sahiwal': '#87CEEB',       // Sky Blue
-		'Surti': '#FFB6C1',       // Light Pink
-		'Tharparkar': '#00FF7F',       // Spring Green
-		'Toda': '#7FFF00',       // Chartreuse
-		'Umblachery': '#DEB887',       // Burly Wood
-		'Vechur': '#5F9EA0',       // Cadet Blue
-	}
+	const CLASS_COLORS = [
+		'#FFFF00',
+		// Orange
+		'#FFA500',
+		'#FF0000',
+	];
+
+	// Format the number on thousands
+	const formatNumber = (number) => {
+		return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	};
+
 	$(document).ready(function ($) {
 		// When images has changed
 		$('#images').on('change', function () {
@@ -92,7 +65,7 @@
 				processData: false,
 				success: function (response) {
 					// Process time html
-					let html = '<div class="alert alert-success p-2" style="font-size: 0.85em" role="alert">Detect Muzzle completed in <strong>' + Math.round(response.inference) + '</strong> ms</div>';
+					let html = '<div class="alert alert-success p-2" style="font-size: 0.85em" role="alert">Detect completed in <strong>' + formatNumber(Math.round(response.inference)) + '</strong> ms</div>';
 
 					// Iterate result
 					const result = Array.from(response.result);
@@ -114,8 +87,13 @@
 						viewer.appendChild(card);
 
 						const body = document.createElement('div');
-						body.className = 'card-body d-flex gap-2';
+						body.className = 'card-body d-flex flex-column gap-2';
 						card.appendChild(body);
+
+						// Create div for store buttons
+						const buttons = document.createElement('div');
+						buttons.className = 'd-flex justify-content-between mb-2';
+						body.appendChild(buttons);
 
 						const left = document.createElement('div');
 						left.className = 'position-relative';
@@ -124,9 +102,34 @@
 						const center = document.createElement('div');
 						body.appendChild(center);
 
+						// Create button for toggle hide and show canvas
+						const toggleButton = document.createElement('button');
+						toggleButton.className = 'btn btn-primary btn-sm';
+						toggleButton.textContent = 'Toggle Mask';
+						toggleButton.onclick = function () {
+							const canvas = left.querySelector('canvas');
+							canvas.hidden = !canvas.hidden;
+							const img = left.querySelector('img');
+							img.style.opacity = img.style.opacity === '0' ? '1' : '0';
+						};
+						buttons.appendChild(toggleButton);
+
+						// Download button, to download the image including the mask
+						const downloadButton = document.createElement('button');
+						downloadButton.className = 'btn btn-success btn-sm';
+						downloadButton.textContent = 'Download';
+						downloadButton.onclick = function () {
+							const canvas = left.querySelector('canvas');
+							const a = document.createElement('a');
+							a.href = canvas.toDataURL('image/png');
+							a.download = value.name;
+                            a.click();
+						};
+						buttons.appendChild(downloadButton);
+
 						const img = document.createElement('img');
 						img.src = URL.createObjectURL(value);
-						img.width = 200;
+						img.classList.add('img-fluid');
 						left.appendChild(img);
 
 						// Create canvas
@@ -137,6 +140,7 @@
 						canvas.style.top = '0';
 						canvas.style.left = '0';
 						canvas.style.zIndex = '1';
+						canvas.style.maxWidth = '100%';
 						canvas.style.pointerEvents = 'none';
 						left.appendChild(canvas);
 
@@ -149,10 +153,13 @@
 							canvas.width = img.width;
 							canvas.height = img.height;
 
+							// Make img opacity 0
+							img.style.opacity = '0';
+
 							console.log('Value:', value.name)
 							const result = Array.from(response.result).find(r => {
-								const file_name = r.file.toString().split('/').pop();
-								return file_name === value.name;
+								const base_name = value.name.split('.').slice(0, -1).join('.');
+								return r.file === base_name;
 							});
 							if (result) {
 								const payload = Array.from(result.payload);
@@ -166,6 +173,7 @@
 								// Create <pre> element
 								const pre = document.createElement('pre');
 								pre.className = 'border p-2';
+								pre.hidden = true;
 								pre.innerHTML = JSON.stringify(payload, null, 4);
 								right.appendChild(pre);
 
@@ -173,17 +181,24 @@
 								const scale_factor = img.width / img.naturalWidth;
 
 								const ctx = canvas.getContext('2d');
+
+								// Draw the image to the canvas with resized
+								ctx.drawImage(img, 0, 0, img.width, img.height);
+
 								// Iterate payload
 								for (const [, value] of Object.entries(payload)) {
-									let [x1, y1, x2, y2, score, class_id] = value;
+									let [x1, y1, x2, y2, points, score, class_id] = value;
 
-									// Create canvas and add to the center
-									const focusCanvas = document.createElement('canvas');
-									focusCanvas.width = x2 - x1;
-									focusCanvas.height = y2 - y1;
-									focusCanvas.style.maxWidth = 200 + 'px';
-									focusCanvas.getContext('2d').drawImage(img, x1, y1, x2 - x1, y2 - y1, 0, 0, x2 - x1, y2 - y1);
-									center.appendChild(focusCanvas);
+									// points = Array.from(points).map(([x, y]) => [x * scale_factor, y * scale_factor]
+									points = Array.from(points).shift();
+
+									// // Create canvas and add to the center
+									// const focusCanvas = document.createElement('canvas');
+									// focusCanvas.width = x2 - x1;
+									// focusCanvas.height = y2 - y1;
+									// focusCanvas.style.maxWidth = 200 + 'px';
+									// focusCanvas.getContext('2d').drawImage(img, x1, y1, x2 - x1, y2 - y1, 0, 0, x2 - x1, y2 - y1);
+									// center.appendChild(focusCanvas);
 
 									// Scale the coordinates
 									x1 *= scale_factor;
@@ -199,6 +214,19 @@
 									ctx.fillStyle = color;
 									ctx.fillText(CLASS_NAMES[class_id] + ': ' + Number(score).toFixed(2), x1, y1);
 
+									// Draw the points as mask and fill with color opacity 0.6
+									if (points.length > 0) {
+										ctx.fillStyle = color;
+										ctx.globalAlpha = 0.6;
+										ctx.beginPath();
+										ctx.moveTo(points[0][0] * scale_factor, points[0][1] * scale_factor);
+										for (let i = 1; i < points.length; i++) {
+											ctx.lineTo(points[i][0] * scale_factor, points[i][1] * scale_factor);
+										}
+										ctx.closePath();
+										ctx.fill();
+									}
+
 									dl_html += '<dt class="col-12">Found <strong style="color: ' + CLASS_COLORS[class_id] + '">"' + CLASS_NAMES[class_id] + '"</strong> has confidence is ' + score + '</dt>';
 								}
 
@@ -210,7 +238,7 @@
 							} else {
 								const alert = document.createElement('div');
 								alert.className = 'alert alert-warning';
-								alert.textContent = 'No classification result';
+								alert.textContent = 'No result';
 								right.appendChild(alert);
 							}
 						};

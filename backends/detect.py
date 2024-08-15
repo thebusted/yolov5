@@ -108,6 +108,12 @@ def detect(data):
                 
                 json_data = det.tolist()
                 
+                # Add image width and height into json_data array
+                json_data = [json_data[i] + [im0.shape[1], im0.shape[0]] for i in range(len(json_data))]
+                
+                # Add label name into json_data array
+                json_data = [json_data[i] + [names[int(json_data[i][5])]] for i in range(len(json_data))]
+                
                 # Put the data in the result array
                 result.append({
                     "file": p,

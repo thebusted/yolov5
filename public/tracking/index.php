@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en"
+      data-bs-theme="dark">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Tracking Showcase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossorigin="anonymous">
+    <style>
+        .monitor {
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 600px;
+            grid-template-rows: 1fr;
+            grid-column-gap: 0px;
+            grid-row-gap: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="monitor overflow-hidden">
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <div>
+                <div class="d-flex w-100 justify-content-between mb-2">
+                    <button class="btn btn-success"
+                            onclick="toggleBox(this)">Show Bounding Box</button>
+                </div>
+                <div class="position-relative">
+                    <img id="renderer"
+                         height="600" />
+                    <canvas id="bounding-box"
+                            style="position: absolute; top: 0; left: 0; z-index: 1; height: 100%; width: 100%;"></canvas>
+                </div>
+                <div class="d-flex w-100 justify-content-between mt-2">
+                    <input id="frame-range"
+                           type="range"
+                           class="form-range"
+                           min="0"
+                           max="0"
+                           oninput="frameChange()">
+                </div>
+            </div>
+        </div>
+        <div class="h-100 overflow-auto"
+             style="background-color: black;">
+            <pre id="data"
+                 class="p-3"></pre>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+            crossorigin="anonymous"></script>
+    <script>
+        window.TRACKS = [];
+        let currentTrack = 0;
+        let allTracks = 0;
+        let showBoundingBox = false;
+        let timeoutBox = null;
+
+        const domRender = document.getElementById('renderer');
+        const domData = document.getElementById('data');
+        const domCanvas = document.getElementById('bounding-box');
+        const domRange = document.getElementById('frame-range');
+
+        function nextFrame() {
+            // Next frame should not exceed the total number of tracks
+            if (currentTrack < allTracks - 1) {
+                currentTrack++;
+                buildImage(TRACKS[currentTrack]);
+            }
+        }
+
+        function prevFrame() {
+            // Previous frame should not be less than 0
+            if (currentTrack > 0) {
+                currentTrack--;
+                buildImage(TRACKS[currentTrack]);
+            }
+        }
+
+        function buildImage(track) {
+            domRender.src = './frames/' + track.id + '.jpg';
+            domData.innerText = JSON.stringify(track, null, 4);
+        }
+
+        function toggleBox(me) {
+            showBoundingBox = !showBoundingBox;
+            if (showBoundingBox) {
+                drawBoundingBox();
+
+                // Change text
+                me.innerText = 'Hide Bounding Box';
+            } else {
+                domCanvas.width = 0;
+                domCanvas.height = 0;
+
+                // Change text
+                me.innerText = 'Show Bounding Box';
+            }
+        }
+
+        function drawBoundingBox() {
+            const payload = TRACKS[currentTrack];
+            const image = new Image();
+            image.src = './frames/'
+                + payload.id
+                + '.jpg';
+            image.onload = function () {
+                domCanvas.width = image.width;
+                domCanvas.height = image.height;
+                const ctx = domCanvas.getContext('2d');
+                ctx.clearRect(0, 0, domCanvas.width, domCanvas.height);
+                ctx.strokeStyle = '#00ff0088';
+                ctx.lineWidth = 4;
+                payload.tracked.forEach(({ id, box }) => {
+                    ctx.strokeRect(box.x1, box.y1, box.width, box.height);
+
+                    // Draw the label
+                    ctx.font = '16px Arial';
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillText('ID: ' + id, box.x1, box.y1 - 5);
+                });
+            };
+        }
+
+        function frameChange() {
+            clearTimeout(timeoutBox);
+            timeoutBox = setTimeout(function () {
+                currentTrack = parseInt(domRange.value);
+                buildImage(TRACKS[currentTrack]);
+                if (showBoundingBox) {
+                    drawBoundingBox();
+                }
+            }, 50);
+        }
+
+        fetch('./tracks.json')
+            .then(response => response.json())
+            .then(data => {
+                TRACKS = data;
+                allTracks = TRACKS.length;
+
+                // Set the range of the frame
+                domRange.max = allTracks - 1;
+
+                buildImage(TRACKS[currentTrack]);
+            });
+    </script>
+</body>
+
+</html>
